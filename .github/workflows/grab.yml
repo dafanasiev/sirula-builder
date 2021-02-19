@@ -11,6 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          repo_token: ${{secrets.PAT}}
 
       - name: Grab upstream/master hash
         run: git ls-remote https://github.com/DorianRudolph/sirula master | awk '{print $1; }' > version
