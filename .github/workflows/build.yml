@@ -24,7 +24,7 @@ jobs:
       - name: Build App
         run: |
           cd sirula && \
-          sudo apt install -y libpango1.0-dev && \
+          sudo apt install -y libpango1.0-dev libatk1.0-dev && \
           cargo build --verbose
       
       - name: Release
