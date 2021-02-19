@@ -23,8 +23,7 @@ jobs:
         if: steps.git-check.outputs.modified == 'true'
         run: |
           hash=$(cat version)
-          git tag v.$hash --message "v.$hash"
           git config --global user.name 'Update Bot'
           git config --global user.email 'boot@example.com'
           git commit -am "New Version Detected"
-          git push
+          git push --atomic origin main refs/tags/v.$hash
