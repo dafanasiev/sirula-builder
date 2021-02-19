@@ -1,4 +1,4 @@
-name: Grab upstream latest version
+name: Main
 
 on:
   schedule:
