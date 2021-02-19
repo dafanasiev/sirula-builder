@@ -13,7 +13,7 @@ jobs:
 
       - name: Checkout upstream repo
         run: |
-          hash = $(cat version)
+          hash=$(cat version)
           git clone https://github.com/DorianRudolph/sirula.git --branch master && \
           cd sirula && \
           git checkout $hash
