@@ -20,6 +20,8 @@ jobs:
       - name: Push upstream/master hash to own repo
         if: steps.git-check.outputs.modified == 'true'
         run: |
+          hash=$(cat version)
+          git tag $hash -m "v.$hash"
           git config --global user.name 'Update Bot'
           git config --global user.email 'boot@example.com'
           git commit -am "New Version Detected"
