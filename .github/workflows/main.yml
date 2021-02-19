@@ -6,13 +6,14 @@ on:
 
   workflow_dispatch:
 
+env:
+  CARGO_TERM_COLOR: always
+
 jobs:
   get-version:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-        with:
-          repo_token: ${{secrets.PAT}}
 
       - name: Grab upstream/master hash
         run: git ls-remote https://github.com/DorianRudolph/sirula master | awk '{print $1; }' > version
@@ -21,6 +22,21 @@ jobs:
         id: git-check
         run: echo ::set-output name=modified::$([ -z "`git status --porcelain`" ] && echo "false" || echo "true")
 
+      - name: Checkout upstream repo
+        if: steps.git-check.outputs.modified == 'true'
+        run: |
+          hash=$(cat version)
+          git clone https://github.com/DorianRudolph/sirula.git --branch master && \
+          cd sirula && \
+          git checkout $hash
+
+      - name: Build App
+        if: steps.git-check.outputs.modified == 'true'
+        run: |
+          cd sirula && \
+          sudo apt install -y libpango1.0-dev libatk1.0-dev libgtk-3-dev libgtk-layer-shell-dev && \
+          cargo build --release --verbose
+      
       - name: Push upstream/master hash to own repo
         if: steps.git-check.outputs.modified == 'true'
         run: |
@@ -30,3 +46,14 @@ jobs:
           git commit -am "New Version Detected"
           git tag v.$hash --message "v.$hash"
           git push --atomic origin main refs/tags/v.$hash
+
+      - name: Release
+        if: steps.git-check.outputs.modified == 'true'
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: sirula/target/release/sirula
+          asset_name: sirula
+          tag: ${{ github.ref }}
+          overwrite: true
+          body: "CI Release"
