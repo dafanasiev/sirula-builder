@@ -25,7 +25,7 @@ jobs:
         run: |
           cd sirula && \
           sudo apt install -y libpango1.0-dev libatk1.0-dev libgtk-3-dev libgtk-layer-shell-dev && \
-          cargo build --verbose
+          cargo build --release --verbose
       
       - name: Release
         uses: svenstaro/upload-release-action@v2
