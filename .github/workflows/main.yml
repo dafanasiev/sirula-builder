@@ -10,12 +10,12 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  get-version:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
 
-      - name: Grab upstream/master hash
+      - name: Grab upstream/master
         run: git ls-remote https://github.com/DorianRudolph/sirula master | awk '{print $1; }' > version
 
       - name: Check for modified files
@@ -25,7 +25,8 @@ jobs:
       - name: Checkout upstream repo
         if: steps.git-check.outputs.modified == 'true'
         run: |
-          hash=$(cat version)
+          hash=$(cat version | cut -c 1-6)
+          echo "APP_VERSION=v.$hash" >> $GITHUB_ENV
           git clone https://github.com/DorianRudolph/sirula.git --branch master && \
           cd sirula && \
           git checkout $hash
@@ -37,15 +38,14 @@ jobs:
           sudo apt install -y libpango1.0-dev libatk1.0-dev libgtk-3-dev libgtk-layer-shell-dev && \
           cargo build --release --verbose
       
-      - name: Push upstream/master hash to own repo
+      - name: Push upstream/master version to own repo
         if: steps.git-check.outputs.modified == 'true'
         run: |
-          hash=$(cat version)
           git config --global user.name 'Update Bot'
           git config --global user.email 'boot@example.com'
           git commit -am "New Version Detected"
-          git tag v.$hash --message "v.$hash"
-          git push --atomic origin main refs/tags/v.$hash
+          git tag $APP_VERSION --message "$APP_VERSION"
+          git push --atomic origin main refs/tags/$APP_VERSION
 
       - name: Release
         if: steps.git-check.outputs.modified == 'true'
@@ -54,6 +54,6 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: sirula/target/release/sirula
           asset_name: sirula
-          tag: ${{ github.ref }}
+          tag: ${{ env.APP_VERSION }}
           overwrite: true
           body: "CI Release"
