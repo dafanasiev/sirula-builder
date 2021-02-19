@@ -4,6 +4,9 @@ on:
   push:
     branches: [ main ]
 
+env:
+  CARGO_TERM_COLOR: always
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -21,4 +24,4 @@ jobs:
       - name: Build App
         run: |
           cd sirula && \
-          docker run -v $(pwd):/app -w /app rust:1:50 /bin/sh -c 'cargo build --release'
+          cargo build --verbose
